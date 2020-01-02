@@ -7,9 +7,22 @@ from datetime import date
 
 #import http.client, urllib, sys, random, time, requests
 
+CONFIG_FILE = 'config.yaml'
+with open(CONFIG_FILE, 'r') as config_file:
+    config = yaml.load(config_file)
+
+uhd_api_key = config['config']['uhd_api_key']
+movie_api_key: config['config']['movie_api_key']
+pushover_api_key: config['config']['pushover_api_key']
+pushover_user: config['config']['pushover_user']
+plex1: config['config']['plex1_domain']
+plex2: config['config']['plex2_domain']
+uhd_api_url: config['config']['uhd_api_url']
+movie_api_url: config['config']['movie_api_url']
 
 
-movie_path = "/home/bradley/temp/test_movie.json"
+
+""" movie_path = "/home/bradley/temp/test_movie.json"
 tv_path = "/home/bradley/temp/test_tv.json"
 uhd_path = "/home/bradley/temp/test_4k.json"
 
@@ -111,3 +124,4 @@ else:
 
 
 print (movie.title)
+ """
