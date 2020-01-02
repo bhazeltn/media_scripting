@@ -20,12 +20,7 @@ plex2: config['config']['plex2_domain']
 uhd_api_url: config['config']['uhd_api_url']
 movie_api_url: config['config']['movie_api_url']
 
-
-
-""" movie_path = "/home/bradley/temp/test_movie.json"
-tv_path = "/home/bradley/temp/test_tv.json"
-uhd_path = "/home/bradley/temp/test_4k.json"
-
+""" 
 rclone_log_file = "/home/bradley/scripts/radarr/logs/rclone." + str(date.today()) + ".log"
 
 class Movie:
@@ -37,16 +32,15 @@ class Movie:
         self.converted_path = re.escape(os.path.dirname(path) + "/" + (os.path.splitext(os.path.basename(path))[0])+".m4v").replace(';','\;')
 
 def content_type(tv, movie, uhd):
-    if os.path.isfile(movie):
+    if os.path.isfile("movie.json"):
         return "movie"
-    elif os.path.isfile(tv):
+    elif os.path.isfile("tv.json"):
         return "tv"
-    elif os.path.isfile(uhd):
+    elif os.path.isfile("uhd.json"):
         return "uhd"
 
 def get_remote():
-    rclone_remote = "/home/bradley/scripts/remote/movie"
-    with open(rclone_remote, "r") as f:
+    with open("remote"", "r") as f:
         remote=f.read()
         remote=int(remote)
         f.close()
@@ -58,7 +52,7 @@ def get_remote():
         else:
             remote = 1
 
-    with open(rclone_remote, "w") as f:
+    with open("remote", "w") as f:
         f.write(str(remote))
         f.close()
 
