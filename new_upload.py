@@ -20,8 +20,8 @@ plex2: config['config']['plex2_domain']
 uhd_api_url: config['config']['uhd_api_url']
 movie_api_url: config['config']['movie_api_url']
 
-""" 
-rclone_log_file = "/home/bradley/scripts/radarr/logs/rclone." + str(date.today()) + ".log"
+
+rclone_log_file = "logs/rclone." + str(date.today()) + ".log"
 
 class Movie:
     def __init__(self, title, path, id, imdb):
@@ -112,10 +112,4 @@ else:
     movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
     movie_upload(get_remote(), content, movie.path, rclone_log_file)
 
-
-
-
-
-
 print (movie.title)
- """
