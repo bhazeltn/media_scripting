@@ -1,0 +1,10 @@
+config:
+  uhd_api_key: <Radarr API Key>
+  movie_api_key: <Radarr API Key>
+  pushover_api_key: <Pushover API Key>
+  pushover_user: <Pushover User>
+  plex1_domain: <Plex domain>
+  plex2_domain: <Plex domain>
+  uhd_api_url: <Radarr API URL>
+  movie_api_url: <Radarr API URL>
+  
