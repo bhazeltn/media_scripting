@@ -9,7 +9,7 @@ from datetime import date
 
 CONFIG_FILE = 'config.yaml'
 with open(CONFIG_FILE, 'r') as config_file:
-    config = yaml.load(config_file)
+    config = yaml.safe_load(config_file)
 
 uhd_api_key = config['config']['uhd_api_key']
 movie_api_key: config['config']['movie_api_key']
