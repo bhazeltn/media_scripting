@@ -1,0 +1,113 @@
+#!/usr/bin/env python
+
+import json, os, re, yaml
+from datetime import date
+
+#from pathlib import Path
+
+#import http.client, urllib, sys, random, time, requests
+
+
+
+movie_path = "/home/bradley/temp/test_movie.json"
+tv_path = "/home/bradley/temp/test_tv.json"
+uhd_path = "/home/bradley/temp/test_4k.json"
+
+rclone_log_file = "/home/bradley/scripts/radarr/logs/rclone." + str(date.today()) + ".log"
+
+class Movie:
+    def __init__(self, title, path, id, imdb):
+        self.title = title
+        self.path = re.escape(path).replace(';','\;')
+        self.id = id
+        self.imdb = imdb
+        self.converted_path = re.escape(os.path.dirname(path) + "/" + (os.path.splitext(os.path.basename(path))[0])+".m4v").replace(';','\;')
+
+def content_type(tv, movie, uhd):
+    if os.path.isfile(movie):
+        return "movie"
+    elif os.path.isfile(tv):
+        return "tv"
+    elif os.path.isfile(uhd):
+        return "uhd"
+
+def get_remote():
+    rclone_remote = "/home/bradley/scripts/remote/movie"
+    with open(rclone_remote, "r") as f:
+        remote=f.read()
+        remote=int(remote)
+        f.close()
+        
+        if remote < 4:
+            remote += 1
+        elif remote == 4:
+            remote = 1
+        else:
+            remote = 1
+
+    with open(rclone_remote, "w") as f:
+        f.write(str(remote))
+        f.close()
+
+    return str(remote)
+
+#Convert SD/HD Movie to friendly formats, rename, put in sorted folder
+def movie_convert(path, imdb, converted):
+    genre_file = "/home/bradley/temp/genre"
+    os.system("python /home/bradley/sickbeard_mp4_automator/manual.py -i " + path + " -imdb " + imdb)
+    os.system("filebot -rename " + converted + "  --output ~/.local/Sorted\ Movies/ --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f} > " + genre_file)
+    with open(genre_file, "r") as f:
+        genre=str(list(f)[-1])
+        f.close()
+    os.remove(genre_file)
+    return genre
+
+#Rename and sort UHD movie
+def uhd_convert(path)
+    genre_file = "/home/bradley/temp/genre"
+    os.system("filebot -rename " + path + "  --output ~/.local/4K\ Sorted/ --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f} > " + genre_file)
+    with open(genre_file, "r") as f:
+        genre=str(list(f)[-1])
+        f.close()
+    os.remove(genre_file)
+    return genre
+
+def movie_upload(remote, content, file_path, log):
+    if content == "movie":
+        prefix = re.escape("Sorted Movies")
+    elif content == "uhd":
+        prefix = re.escape("4K Sorted")
+    local_path = re.escape(os.path.dirname(genre)).replace(';','\;')    
+    remote_path = prefix + str(remote) + ":/" + os.path.dirname(os.path.relpath(file_path, "/home/bradley/.local")).replace(';','\;')
+    #os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file " + log)
+    return remote_path 
+
+content = content_type(tv_path,movie_path,uhd_path)
+
+if content == "movie":
+    data = movie_path
+    with open(data, "r") as f:
+        m = json.load(f)
+        f.close
+    #os.remove(genre_file)   //remove comment when live
+    movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
+    genre_path = movie_convert(movie.path, movie.imdb, movie.converted))
+    movie_upload(get_remote(), content, genre_path, rclone_log_file)
+
+elif content == "tv":
+    data = tv_path
+else:
+    data = uhd_path
+    with open(data, "r") as f:
+        m = json.load(f)
+        f.close
+    #os.remove(genre_file)   //remove comment when live
+    movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
+    movie_upload(get_remote(), content, movie.path, rclone_log_file)
+
+
+
+
+
+
+print (movie.title)
