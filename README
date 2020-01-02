@@ -1,0 +1,23 @@
+My Sonarr/Radarr scripting
+
+Using 1 Radarr for SD/HD movies, 1 for UHD, Sonarr for TV. Rclone to Google Drive Team Drive (4 remotes)
+
+I use:
+sickbeard_mp4_automator to transcode TV and SD/HD movies. UHD are not transcoded at this time
+filebot to sort movies into genre based folders
+rsync to update plex
+rclone to move the files to Google Drive
+unionfs-fuse
+
+You will likely need to modify this heavily to suit your needs
+
+This is a work in progress to merge 2 automation scripts
+
+General workflow
+
+Radarr / Sonarr processes file. Dumps info into JSON file
+Script checks to see if it needs to process SD/HD, UHD, or TV
+Transcodes (as needed)
+Sorts/renames (as needed)
+Uploads to Google
+Updates Plex
