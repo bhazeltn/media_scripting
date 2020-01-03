@@ -21,9 +21,6 @@ plex2: config['config']['plex2_domain']
 uhd_api_url: config['config']['uhd_api_url']
 movie_api_url: config['config']['movie_api_url']
 
-
-rclone_log_file = "logs/rclone." + str(date.today()) + ".log"
-
 class Movie:
     def __init__(self, title, path, id, imdb):
         self.title = title
@@ -37,6 +34,7 @@ def get_remote():
         remote=f.read()
         remote=int(remote)
         f.close() 
+    print (remote)
     if remote < 4:
         remote += 1
     elif remote == 4:
@@ -59,30 +57,29 @@ def rename(movie_file, content):
     elif content == "uhd":
         base = "4K\ Sorted/"
     os.system("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f} > genre")
-    #subprocess.call(['filebot', '-rename ' + movie_file, "--output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}"], shell = True) 
-    #proc = subprocess.Popen("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}", stdout=subprocess.PIPE, shell=True)
-    #(out, err) = proc.communicate()
-    #print ("program output:", out)
     with open("genre", "r") as f:
         genre=str(list(f)[-1])
         f.close()
     os.remove("genre")
     return genre
+
+def upload(to_upload):
+    local_path = escape(os.path.dirname(to_upload)).replace(';','\;')    
+    remote_path = get_remote() + os.path.dirname(os.path.relpath(to_upload, "/home/bradley/.local")).replace(';','\;')
+    #os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
+    return remote_path
  
 def main():
-    remote = get_remote()
     if os.path.isfile("movie.json"):
         with open("movie.json", "r") as f:
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
         print (movie.path)
-        #convert
-        #convert(movie.path, movie.imdb)
+        convert(movie.path, movie.imdb)
         moved = rename(movie.path, "movie")
-        print (moved)
-        #sort
-        #upload
+        uploaded = upload(moved)
+        print (uploaded)
         #notify plex
         #remove movie from radarr
     else:
