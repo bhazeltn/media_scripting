@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json, os, yaml
+import json, os, yaml, subprocess
 from datetime import date
 from re import escape
 
@@ -27,7 +27,7 @@ rclone_log_file = "logs/rclone." + str(date.today()) + ".log"
 class Movie:
     def __init__(self, title, path, id, imdb):
         self.title = title
-        self.path = escape(path).replace(';','\;')
+        self.path = escape("/home/bradley/.local" + path).replace(';','\;')
         self.id = id
         self.imdb = imdb
         self.converted = escape(os.path.dirname(path) + "/" + (os.path.splitext(os.path.basename(path))[0])+".m4v").replace(';','\;')
@@ -51,8 +51,22 @@ def get_remote():
 
 def convert(movie_file, imdb):
     #os.system("python /home/bradley/sickbeard_mp4_automator/manual.py -i " + movie_file + " -imdb " + imdb)
-    print("Converted " + movie_file) #remove this
+    print("Converted ") #remove this
 
+def rename(movie_file, content):
+    if content == "movie":
+        base = "Sorted\ Movies/"
+    elif content == "uhd":
+        base = "4K\ Sorted/"
+    #os.system("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}")
+    #subprocess.call(['filebot', '-rename ' + movie_file, "--output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}"], shell = True)
+# -exec echo {f} > " + genre_file
+    proc = subprocess.Popen("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}", stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    print ("program output:", out)
+    
+    
+    
 def main():
     remote = get_remote()
     if os.path.isfile("movie.json"):
@@ -60,9 +74,10 @@ def main():
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-        print (movie.converted)
+        print (movie.path)
         #convert
-        convert(movie.path, movie.imdb)
+        #convert(movie.path, movie.imdb)
+        rename(movie.path, "movie")
         #sort
         #upload
         #notify plex
