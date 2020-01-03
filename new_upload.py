@@ -58,15 +58,17 @@ def rename(movie_file, content):
         base = "Sorted\ Movies/"
     elif content == "uhd":
         base = "4K\ Sorted/"
-    #os.system("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}")
-    #subprocess.call(['filebot', '-rename ' + movie_file, "--output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}"], shell = True)
-# -exec echo {f} > " + genre_file
-    proc = subprocess.Popen("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}", stdout=subprocess.PIPE, shell=True)
-    (out, err) = proc.communicate()
-    print ("program output:", out)
-    
-    
-    
+    os.system("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f} > genre")
+    #subprocess.call(['filebot', '-rename ' + movie_file, "--output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}"], shell = True) 
+    #proc = subprocess.Popen("filebot -rename " + movie_file + "  --output ~/.local/" + base + " --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f}", stdout=subprocess.PIPE, shell=True)
+    #(out, err) = proc.communicate()
+    #print ("program output:", out)
+    with open("genre", "r") as f:
+        genre=str(list(f)[-1])
+        f.close()
+    os.remove("genre")
+    return genre
+ 
 def main():
     remote = get_remote()
     if os.path.isfile("movie.json"):
@@ -77,7 +79,8 @@ def main():
         print (movie.path)
         #convert
         #convert(movie.path, movie.imdb)
-        rename(movie.path, "movie")
+        moved = rename(movie.path, "movie")
+        print (moved)
         #sort
         #upload
         #notify plex
