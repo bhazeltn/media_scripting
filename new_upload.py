@@ -36,24 +36,37 @@ def get_remote():
     with open("remote", "r") as f:
         remote=f.read()
         remote=int(remote)
-        f.close()
-        
-        if remote < 4:
-            remote += 1
-        elif remote == 4:
-            remote = 1
-        else:
-            remote = 1
-
+        f.close() 
+    if remote < 4:
+        remote += 1
+    elif remote == 4:
+        remote = 1
+    else:
+        remote = 1
     with open("remote", "w") as f:
         f.write(str(remote))
         f.close()
-    remote = "4k" + str(remote)
+    remote = "4k" + str(remote) + ":/"
     return remote
 
+def convert(movie_file, imdb):
+    #os.system("python /home/bradley/sickbeard_mp4_automator/manual.py -i " + movie_file + " -imdb " + imdb)
+    print("Converted " + movie_file) #remove this
+
 def main():
+    remote = get_remote()
     if os.path.isfile("movie.json"):
-        print ("movie")
+        with open("movie.json", "r") as f:
+            m = json.load(f)
+            f.close
+        movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
+        print (movie.converted)
+        #convert
+        convert(movie.path, movie.imdb)
+        #sort
+        #upload
+        #notify plex
+        #remove movie from radarr
     else:
         quit("No Good")
     #elif os.path.isfile("tv.json"):
