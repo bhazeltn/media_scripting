@@ -55,8 +55,8 @@ def get_remote():
     with open("remote", "w") as f:
         f.write(str(remote))
         f.close()
-
-    return str(remote)
+    remote = "4k" + str(remote)
+    return remote
 
 #Convert SD/HD Movie to friendly formats, rename, put in sorted folder
 def movie_convert(path, imdb, converted):
@@ -80,12 +80,9 @@ def uhd_convert(path):
     return genre
 
 def movie_upload(remote, content, file_path, log):
-    if content == "movie":
-        prefix = re.escape("Sorted Movies")
-    elif content == "uhd":
-        prefix = re.escape("4K Sorted")
+    
     local_path = re.escape(os.path.dirname(file_path)).replace(';','\;')    
-    remote_path = prefix + str(remote) + ":/" + os.path.dirname(os.path.relpath(file_path, "/home/bradley/.local")).replace(';','\;')
+    remote_path = str(remote) + ":/" + os.path.dirname(os.path.relpath(file_path, "/home/bradley/.local")).replace(';','\;')
     #os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file " + log)
     return remote_path 
 
@@ -112,5 +109,5 @@ else:
     movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
     upload = movie_upload(get_remote(), content, movie.path, rclone_log_file)
 
-#print (upload)
-print (movie.converted)
+print (upload)
+#print (movie.converted)
