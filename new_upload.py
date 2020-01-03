@@ -112,4 +112,5 @@ else:
     movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
     upload = movie_upload(get_remote(), content, movie.path, rclone_log_file)
 
-print (upload)
+#print (upload)
+print (movie.converted)
