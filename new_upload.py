@@ -111,18 +111,16 @@ def main():
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-        print (movie.path)
-        print (movie.converted)
-        #lockfile="movie.lock"
-        #locked(lockfile)
-        #os.mknod(lockfile)
-        #convert(movie.converted, movie.imdb)
-        #os.remove(lockfile)
-        #moved = rename(movie.path, "movie")
-        #upload(moved)
-        #del_movie(movie.id, movie_api_key, movie_api_url)
-        #notify(movie.title, pushover_api_key, pushover_user)
-        #update_plex(moved, plex1_domain, "movie")   
+        lockfile="movie.lock"
+        locked(lockfile)
+        os.mknod(lockfile)
+        convert(movie.converted, movie.imdb)
+        os.remove(lockfile)
+        moved = rename(movie.path, "movie")
+        upload(moved)
+        del_movie(movie.id, movie_api_key, movie_api_url)
+        notify(movie.title, pushover_api_key, pushover_user)
+        update_plex(moved, plex1_domain, "movie")   
     else:
         quit("No Good")
     #elif os.path.isfile("tv.json"):
