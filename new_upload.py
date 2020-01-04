@@ -48,8 +48,7 @@ def get_remote():
     return remote
 
 def convert(movie_file, imdb):
-    #os.system("python /home/bradley/sickbeard_mp4_automator/manual.py -i " + movie_file + " -imdb " + imdb)
-    print("Converted ") #remove this
+    os.system("python /home/bradley/sickbeard_mp4_automator/manual.py -i " + movie_file + " -imdb " + imdb)
 
 def rename(movie_file, content):
     if content == "movie":
@@ -66,8 +65,7 @@ def rename(movie_file, content):
 def upload(to_upload):
     local_path = escape(os.path.dirname(to_upload)).replace(';','\;')    
     remote_path = escape(get_remote() + os.path.dirname(os.path.relpath(to_upload, "/home/bradley/.local"))).replace(';','\;')
-    #os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
-    return remote_path
+    os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
 
 def del_movie(movie_id, radarr_api, radarr_url):
     print (radarr_api)
@@ -75,7 +73,7 @@ def del_movie(movie_id, radarr_api, radarr_url):
         'X-api-key': radarr_api
     }
     del_url = radarr_url + movie_id +  "?deleteFiles=false&addExclusion=true"
-    #r = requests.delete(del_url, headers=header)
+    r = requests.delete(del_url, headers=header)
     print (del_url)
 
 def notify(title, api, user):
@@ -88,8 +86,16 @@ def notify(title, api, user):
     }), { "Content-type": "application/x-www-form-urlencoded" })
     conn.getresponse()
 
-def update_plex():
+def update_plex(to_update, plex_server, content):
     print("Plex")
+
+    with open(content, "w") as write_file:
+        write_file.write(to_update)
+        write_file.close
+
+    print ("Plex Update File Created")
+    os.system("rsync -avz " + content + " plex@" + plex_server + ":/var/lib/plexmediaserver/scripts/")
+    os.remove(content)
  
 def main():
     if os.path.isfile("movie.json"):
@@ -97,15 +103,13 @@ def main():
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-        
-        #convert(movie.path, movie.imdb)
-        #moved = rename(movie.path, "movie")
-        #uploaded = upload(moved)
-        #del_movie(movie.id, movie_api_key, movie_api_url)
+        #process lock
+        convert(movie.path, movie.imdb)
+        moved = rename(movie.path, "movie")
+        upload(moved)
+        del_movie(movie.id, movie_api_key, movie_api_url)
         notify(movie.title, pushover_api_key, pushover_user)
-        
-        #plex
-        
+        update_plex(moved, plex1_domain, "movie")   
     else:
         quit("No Good")
     #elif os.path.isfile("tv.json"):
