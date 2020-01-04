@@ -24,11 +24,12 @@ movie_api_url = config['config']['movie_api_url']
 class Movie:
     def __init__(self, title, path, id, imdb):
         self.title = title
-        inter_path = "/home/bradley/.local" + path
-        self.path = escape(inter_path).replace(';','\;')
+        prefix = "/home/bradley/.local"
+        path = prefix + path
+        self.path = escape(path).replace(';','\;')
         self.id = id
         self.imdb = imdb
-        self.converted = escape(os.path.dirname(inter_path) + "/" + (os.path.splitext(os.path.basename(inter_path))[0])+".m4v").replace(';','\;')
+        self.converted = escape(os.path.dirname(path) + "/" + (os.path.splitext(os.path.basename(path))[0])+".m4v").replace(';','\;')
 
 def get_remote():
     with open("remote", "r") as f:
@@ -110,16 +111,18 @@ def main():
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-        lockfile="movie.lock"
-        locked(lockfile)
-        os.mknod(lockfile)
-        convert(movie.converted, movie.imdb)
-        os.remove(lockfile)
-        moved = rename(movie.path, "movie")
-        upload(moved)
-        del_movie(movie.id, movie_api_key, movie_api_url)
-        notify(movie.title, pushover_api_key, pushover_user)
-        update_plex(moved, plex1_domain, "movie")   
+        print (movie.path)
+        print (movie.converted)
+        #lockfile="movie.lock"
+        #locked(lockfile)
+        #os.mknod(lockfile)
+        #convert(movie.converted, movie.imdb)
+        #os.remove(lockfile)
+        #moved = rename(movie.path, "movie")
+        #upload(moved)
+        #del_movie(movie.id, movie_api_key, movie_api_url)
+        #notify(movie.title, pushover_api_key, pushover_user)
+        #update_plex(moved, plex1_domain, "movie")   
     else:
         quit("No Good")
     #elif os.path.isfile("tv.json"):
