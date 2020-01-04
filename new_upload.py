@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json, os, yaml, subprocess, http.client, urllib, requests
+import json, os, yaml, subprocess, http.client, urllib, requests, random
 from datetime import date
 from re import escape
 
@@ -96,6 +96,12 @@ def update_plex(to_update, plex_server, content):
     print ("Plex Update File Created")
     os.system("rsync -avz " + content + " plex@" + plex_server + ":/var/lib/plexmediaserver/scripts/")
     os.remove(content)
+
+def locked(content):
+    while os.path.isfile(content):
+        t=random.randint(1,60)
+        print("Waiting for other conversion to finish, sleeping for "+str(t)+" seconds")
+        time.sleep(t)
  
 def main():
     if os.path.isfile("movie.json"):
@@ -103,8 +109,11 @@ def main():
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-        #process lock
+        lockfile="movie.lock"
+        locked(lockfile)
+        os.mknod(lockfile)
         convert(movie.path, movie.imdb)
+        os.remove(lockfile)
         moved = rename(movie.path, "movie")
         upload(moved)
         del_movie(movie.id, movie_api_key, movie_api_url)
