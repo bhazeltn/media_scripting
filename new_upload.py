@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json, os, yaml, subprocess
+import json, os, yaml, subprocess, http.client, urllib, requests
 from datetime import date
 from re import escape
 
@@ -11,15 +11,15 @@ from re import escape
 CONFIG_FILE = 'config.yaml'
 with open(CONFIG_FILE, 'r') as config_file:
     config = yaml.safe_load(config_file)
-
 uhd_api_key = config['config']['uhd_api_key']
-movie_api_key: config['config']['movie_api_key']
-pushover_api_key: config['config']['pushover_api_key']
-pushover_user: config['config']['pushover_user']
-plex1: config['config']['plex1_domain']
-plex2: config['config']['plex2_domain']
-uhd_api_url: config['config']['uhd_api_url']
-movie_api_url: config['config']['movie_api_url']
+movie_api_key = config['config']['movie_api_key']
+pushover_api_key = config['config']['pushover_api_key']
+pushover_user = config['config']['pushover_user']
+plex1 = config['config']['plex1_domain']
+plex2 = config['config']['plex2_domain']
+uhd_api_url = config['config']['uhd_api_url']
+movie_api_url = config['config']['movie_api_url']
+
 
 class Movie:
     def __init__(self, title, path, id, imdb):
@@ -65,9 +65,31 @@ def rename(movie_file, content):
 
 def upload(to_upload):
     local_path = escape(os.path.dirname(to_upload)).replace(';','\;')    
-    remote_path = get_remote() + os.path.dirname(os.path.relpath(to_upload, "/home/bradley/.local")).replace(';','\;')
+    remote_path = escape(get_remote() + os.path.dirname(os.path.relpath(to_upload, "/home/bradley/.local"))).replace(';','\;')
     #os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
     return remote_path
+
+def del_movie(movie_id, radarr_api, radarr_url):
+    print (radarr_api)
+    header = {
+        'X-api-key': radarr_api
+    }
+    del_url = radarr_url + movie_id +  "?deleteFiles=false&addExclusion=true"
+    #r = requests.delete(del_url, headers=header)
+    print (del_url)
+
+def notify(title, api, user):
+    conn = http.client.HTTPSConnection("api.pushover.net:443")
+    conn.request("POST", "/1/messages.json",
+    urllib.parse.urlencode({
+        "token": api,
+        "user": user,
+        "message": "Processed and uploaded " + title,
+    }), { "Content-type": "application/x-www-form-urlencoded" })
+    conn.getresponse()
+
+def update_plex():
+    print("Plex")
  
 def main():
     if os.path.isfile("movie.json"):
@@ -75,13 +97,15 @@ def main():
             m = json.load(f)
             f.close
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-        print (movie.path)
-        convert(movie.path, movie.imdb)
-        moved = rename(movie.path, "movie")
-        uploaded = upload(moved)
-        print (uploaded)
-        #notify plex
-        #remove movie from radarr
+        
+        #convert(movie.path, movie.imdb)
+        #moved = rename(movie.path, "movie")
+        #uploaded = upload(moved)
+        #del_movie(movie.id, movie_api_key, movie_api_url)
+        notify(movie.title, pushover_api_key, pushover_user)
+        
+        #plex
+        
     else:
         quit("No Good")
     #elif os.path.isfile("tv.json"):
@@ -90,61 +114,3 @@ def main():
     #    return "uhd"
 
 main()
-
-
-""" 
-Sample from prior iterations, stuff to work out
-
-#Rename and sort UHD movie
-def uhd_convert(path):
-    genre_file = "genre"
-    os.system("filebot -rename " + path + "  --output ~/.local/4K\ Sorted/ --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f} > " + genre_file)
-    with open(genre_file, "r") as f:
-        genre=str(list(f)[-1])
-        f.close()
-    os.remove(genre_file)
-    return genre
-
-
-#Convert SD/HD Movie to friendly formats, rename, put in sorted folder
-def movie_convert(path, imdb, converted):
-    genre_file = "genre"
-    #os.system("python /home/bradley/sickbeard_mp4_automator/manual.py -i " + path + " -imdb " + imdb)
-    #os.system("filebot -rename " + converted + "  --output ~/.local/Sorted\ Movies/ --format \"{genres.contains(\'Animation\') ? \'Animated\' : genres.contains(\'Science Fiction\') ? \'SciFi\' : genres.contains(\'Comedy\') && genres.contains(\'Romance\') ? \'RomCom\' : genres.contains(\'Horror\') ? \'Horror\' : genres[0]}/{any{collection}{ny}}/{fn}\" --db TheMovieDB -exec echo {f} > " + genre_file)
-    with open(genre_file, "r") as f:
-        genre=str(list(f)[-1])
-        f.close()
-    #os.remove(genre_file)
-    return genre
-
-def movie_upload(remote, content, file_path, log):
-    
-    local_path = re.escape(os.path.dirname(file_path)).replace(';','\;')    
-    remote_path = str(remote) + ":/" + os.path.dirname(os.path.relpath(file_path, "/home/bradley/.local")).replace(';','\;')
-    #os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file " + log)
-    return remote_path
-if content == "movie":
-    data = "movie.json"
-    with open(data, "r") as f:
-        m = json.load(f)
-        f.close
-    #os.remove(genre_file)   //remove comment when live
-    movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-    #genre_path = movie_convert(movie.path, movie.imdb, movie.converted)
-    #upload = movie_upload(get_remote(), content, movie.path, rclone_log_file)
-
-elif content == "tv":
-    data = "tv.json"
-else:
-    data = "uhd.json"
-    with open(data, "r") as f:
-        m = json.load(f)
-        f.close
-    #os.remove(genre_file)   //remove comment when live
-    #movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
-    #upload = movie_upload(get_remote(), content, movie.path, rclone_log_file)
-
-
-
-
- """
