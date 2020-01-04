@@ -67,7 +67,7 @@ def rename(movie_file, content):
 def upload(to_upload):
     local_path = escape(os.path.dirname(to_upload)).replace(';','\;')    
     remote_path = escape(get_remote() + os.path.dirname(os.path.relpath(to_upload, "/home/bradley/.local"))).replace(';','\;')
-    os.system("/usr/bin/rclone move " + rclone_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
+    os.system("/usr/bin/rclone move " + local_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
 
 def del_movie(movie_id, radarr_api, radarr_url):
     print (radarr_api)
