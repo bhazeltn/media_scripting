@@ -5,7 +5,6 @@ from datetime import date
 from re import escape
 
 #from pathlib import Path
-
 #import http.client, urllib, sys, random, time, requests
 
 CONFIG_FILE = 'config.yaml'
@@ -20,7 +19,6 @@ plex2 = config['config']['plex2_domain']
 uhd_api_url = config['config']['uhd_api_url']
 movie_api_url = config['config']['movie_api_url']
 
-
 class Movie:
     def __init__(self, title, path, id, imdb):
         self.title = title
@@ -32,7 +30,7 @@ class Movie:
         self.converted = escape(os.path.dirname(path) + "/" + (os.path.splitext(os.path.basename(path))[0])+".m4v").replace(';','\;')
 
 def get_remote():
-    with open("remote", "r") as f:
+    with open("rmt", "r") as f:
         remote=f.read()
         remote=int(remote)
         f.close() 
@@ -42,7 +40,7 @@ def get_remote():
         remote = 1
     else:
         remote = 1
-    with open("remote", "w") as f:
+    with open("rmt", "w") as f:
         f.write(str(remote))
         f.close()
     remote = "4k" + str(remote) + ":/"
