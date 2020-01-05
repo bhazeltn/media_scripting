@@ -110,6 +110,7 @@ def main():
         with open("movie.json", "r") as f:
             m = json.load(f)
             f.close
+        os.remove("movie.json")
         movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
         lockfile="movie.lock"
         locked(lockfile)
@@ -120,9 +121,9 @@ def main():
         upload(moved)
         del_movie(movie.id, movie_api_key, movie_api_url)
         notify(movie.title, pushover_api_key, pushover_user)
-        update_plex(moved, plex1_domain, "movie")   
+        update_plex(moved, plex1, "movie")   
     else:
-        quit("No Good")
+        quit("Nothing to do, moving on!")
     #elif os.path.isfile("tv.json"):
     #    return "tv"
     #elif os.path.isfile("uhd.json"):
