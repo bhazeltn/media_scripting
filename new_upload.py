@@ -113,6 +113,17 @@ def main():
         del_movie(movie.id, movie_api_key, movie_api_url)
         notify(movie.title, pushover_api_key, pushover_user)
         update_plex(moved, plex1, "movie")   
+    elif os.path.isfile("uhd.json"):
+        with open("uhd.json", "r") as f:
+            m = json.load(f)
+            f.close
+        os.remove("uhd.json")
+        movie = Movie(m['movietitle'], m['moviepath'], m['movieid'],m['imdbid'])
+        moved = rename(movie.path, "uhd")
+        upload(moved)
+        del_movie(movie.id, uhd_api_key, uhd_api_url)
+        notify(movie.title, pushover_api_key, pushover_user)
+        update_plex(moved, plex1, "uhd")
     else:
         quit("Nothing to do, moving on!")
     #elif os.path.isfile("tv.json"):
