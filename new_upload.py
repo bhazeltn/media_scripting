@@ -89,13 +89,9 @@ def notify(title, api, user):
     conn.getresponse()
 
 def update_plex(to_update, plex_server, content):
-    print("Plex")
-
     with open(content, "w") as write_file:
         write_file.write(to_update)
         write_file.close
-
-    print ("Plex Update File Created")
     os.system("rsync -avz " + content + " plex@" + plex_server + ":/var/lib/plexmediaserver/scripts/")
     os.remove(content)
 
