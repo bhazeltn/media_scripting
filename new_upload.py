@@ -69,13 +69,11 @@ def upload(to_upload):
     os.system("/usr/bin/rclone move " + local_path + " " + remote_path + " -v --stats=15s --log-file logs/rclone." + str(date.today()) + ".log")
 
 def del_movie(movie_id, radarr_api, radarr_url):
-    print (radarr_api)
     header = {
         'X-api-key': radarr_api
     }
     del_url = radarr_url + movie_id +  "?deleteFiles=false&addExclusion=true"
     r = requests.delete(del_url, headers=header)
-    print (del_url)
 
 def notify(title, api, user):
     conn = http.client.HTTPSConnection("api.pushover.net:443")
