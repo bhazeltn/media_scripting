@@ -36,7 +36,6 @@ def get_remote():
         remote=f.read()
         remote=int(remote)
         f.close() 
-    print (remote)
     if remote < 4:
         remote += 1
     elif remote == 4:
